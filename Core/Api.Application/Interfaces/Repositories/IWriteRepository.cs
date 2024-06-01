@@ -13,6 +13,8 @@ namespace Api.Application.Interfaces.Repositories
         Task AddRangeAsync(IList<T> entities);
         Task<T> UpdateAsync(T entity);
         Task HardDeleteAsync(T entity);//Normalde int kullanilabilir,burda id'nin turunu bilemedigimiz icin 
+        Task HardDeleteRangeAsync(IList<T> entity);//Normalde int kullanilabilir,burda id'nin turunu bilemedigimiz icin 
+
        
 
     }
