@@ -24,7 +24,7 @@ namespace Api.Domain.Entities
         public string Name { get; set; }
         public int Priorty { get; set; }
         public ICollection<Detail> Details { get; set; }
-        public ICollection<Product> Products { get; set; }
+        public ICollection<ProductCategory> ProductCategories { get; set; }
 
 
 

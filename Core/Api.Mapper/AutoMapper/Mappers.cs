@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿
+using AutoMapper;
 using AutoMapper.Internal;
 using MediatR.NotificationPublishers;
 using System;
