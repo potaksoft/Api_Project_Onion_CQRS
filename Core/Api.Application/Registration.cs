@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Globalization;
 using MediatR;
 using Api.Application.Beheviors;
+using Api.Application.Features.Products.Rules;
+using Api.Application.Bases;
 
 namespace Api.Application
 {
@@ -21,6 +23,10 @@ namespace Api.Application
 
             services.AddTransient<ExceptionMiddleWare>();
 
+            services.AddRulesFromAssemblyContaining(assembly,typeof(BaseRules));
+
+            //services.AddTransient<ProductRules>();
+
             services.AddMediatR(cfg=>cfg.RegisterServicesFromAssemblies(assembly));
 
             services.AddValidatorsFromAssembly(assembly);
@@ -28,6 +34,15 @@ namespace Api.Application
             ValidatorOptions.Global.LanguageManager.Culture=new CultureInfo("tr");
 
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(FluentValidationBehevior<,>));
+        }
+        private static IServiceCollection AddRulesFromAssemblyContaining(this IServiceCollection services,Assembly assembly,Type type)
+        {
+            var types=assembly.GetTypes().Where(t=>t.IsSubclassOf(type)&& type!=t).ToList();
+            foreach (var item in types)
+            {
+                services.AddTransient(item);
+            }
+            return services;
         }
     }
 }
