@@ -42,7 +42,7 @@ namespace Api.Application.Exceptions
 			List<string>  errors = new()
 			{
 				$"Hata mesaji:{exception.Message}",
-				$"Mesaj Aciklmasi:{exception.InnerException?.ToString()}"
+				
 			};
 			return httpContext.Response.WriteAsync(new ExceptionModel
 			{

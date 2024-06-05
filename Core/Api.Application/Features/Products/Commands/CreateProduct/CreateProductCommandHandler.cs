@@ -1,6 +1,8 @@
-﻿using Api.Application.Interfaces.UnitOfWorks;
+﻿using Api.Application.Features.Products.Rules;
+using Api.Application.Interfaces.UnitOfWorks;
 using Api.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,13 +14,32 @@ namespace Api.Application.Features.Products.Commands.CreateProduct
     public class CreateProductCommandHandler : IRequestHandler<CreateProductCommandRequest,Unit>
     {
         private readonly IUnitOfWork unitOfWork;
+        private readonly ProductRules productRules;
 
-        public CreateProductCommandHandler(IUnitOfWork unitOfWork)
+        public CreateProductCommandHandler(IUnitOfWork unitOfWork,ProductRules productRules)
         {
             this.unitOfWork = unitOfWork;
+            this.productRules = productRules;
         }
         public async Task<Unit> Handle(CreateProductCommandRequest request, CancellationToken cancellationToken)
         {
+            IList<Product> products = await unitOfWork.GetReadRepository<Product>().GetAllAsync();
+
+            //if (products.Any(x=>x.Title==request.Title))
+            //{
+            //    throw new Exception("Ayni baslikta urun olamaz");
+            //}
+
+            await productRules.ProductTitleMustNotBeSame(products, request.Title);
+
+            //foreach (var item in products)
+            //{
+            //    if (item.Title==request.Title)
+            //    {
+
+            //    }
+            //}
+
             Product product = new(request.Title, request.Description, request.BrandId, request.Price, request.Discount);
 
             await unitOfWork.GetWriteRepository<Product>().AddAsync(product);
