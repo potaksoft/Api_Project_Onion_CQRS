@@ -5,9 +5,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,14 +17,14 @@ namespace Api.Infrastructure.Tokens
 {
     public class TokenService : ITokenService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly TokenSettings _tokenSettings;
+        private readonly UserManager<User> userManager;
+        private readonly TokenSettings tokenSettings;
 
 
         public TokenService(IOptions<TokenSettings> options, UserManager<User> userManager)
         {
-            _tokenSettings = options.Value;
-            _userManager = userManager;
+            tokenSettings = options.Value;
+            this.userManager = userManager;
         }
         public async Task<JwtSecurityToken> CreateToken(User user, IList<string> roles)
         {
@@ -37,29 +39,56 @@ namespace Api.Infrastructure.Tokens
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSettings.Secret));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSettings.Secret));
 
             var token = new JwtSecurityToken(
-                issuer: _tokenSettings.Issuer,
-                audience: _tokenSettings.Audience,
-                expires: DateTime.Now.AddMinutes(_tokenSettings.TokenValidatyInMinutes),
+                issuer: tokenSettings.Issuer,
+                audience: tokenSettings.Audience,
+                expires: DateTime.Now.AddMinutes(tokenSettings.TokenValidatyInMinutes),
                 claims: claims,
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
                 );
 
-            await _userManager.AddClaimsAsync(user, claims);
+            await userManager.AddClaimsAsync(user, claims);
 
             return token;
         }
 
         public string GenerateRefreshToken()
         {
-            throw new NotImplementedException();
+            var randomNumber = new Byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
 
-        public ClaimsPrincipal? GetPrincipalFromExpiredToken()
+        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
         {
-            throw new NotImplementedException();
+            TokenValidationParameters tokenValidationParameters = new()
+            {
+                ValidateIssuer = false,
+                ValidateAudience= false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSettings.Secret)),
+                ValidateLifetime = false
+
+            };
+
+            JwtSecurityTokenHandler tokenHandler = new();
+            var principal = tokenHandler.ValidateToken(token,tokenValidationParameters,out SecurityToken securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Token can not Found");
+            }
+
+            return principal;   
+
+
+
+
         }
     }
 }
+
+
