@@ -1,4 +1,5 @@
 ﻿using Api.Application.Features.Auth.Commands.Login;
+using Api.Application.Features.Auth.Commands.RefreshToken;
 using Api.Application.Features.Auth.Commands.Register;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -27,6 +28,12 @@ namespace Api.Api.Controllers
         {
             var response=await _mediator.Send(request);
             return StatusCode(StatusCodes.Status200OK,response);
+        }
+        [HttpPost]
+        public async Task<IActionResult> RefreshToken(RefreshTokenCommandRequest request)
+        {
+            var response = await _mediator.Send(request);
+            return StatusCode(StatusCodes.Status200OK, response);
         }
     }
 }
