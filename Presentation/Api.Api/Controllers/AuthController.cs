@@ -1,6 +1,8 @@
 ﻿using Api.Application.Features.Auth.Commands.Login;
 using Api.Application.Features.Auth.Commands.RefreshToken;
 using Api.Application.Features.Auth.Commands.Register;
+using Api.Application.Features.Auth.Commands.Revoke;
+using Api.Application.Features.Auth.Commands.RevokeAll;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +36,18 @@ namespace Api.Api.Controllers
         {
             var response = await _mediator.Send(request);
             return StatusCode(StatusCodes.Status200OK, response);
+        }
+        [HttpPost]
+        public async Task<IActionResult> Revoke(RevokeCommandRequest request)
+        {
+            await _mediator.Send(request);
+            return StatusCode(StatusCodes.Status200OK);
+        }
+        [HttpPost]
+        public async Task<IActionResult> RevokeAll(RevokeAllCommandRequest request)
+        {
+             await _mediator.Send(new RevokeAllCommandRequest());
+            return StatusCode(StatusCodes.Status200OK);
         }
     }
 }
