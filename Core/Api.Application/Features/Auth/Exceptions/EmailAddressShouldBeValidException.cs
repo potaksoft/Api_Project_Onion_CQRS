@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Api.Application.Features.Auth.Exceptions
 {
-    public class RefreshTokenShouldNotBeExpiredException:BaseExceptions
+    public class EmailAddressShouldBeValidException:BaseExceptions
     {
-        public RefreshTokenShouldNotBeExpiredException() : base("Time is Up.Please try again") 
+        public EmailAddressShouldBeValidException():base("There is no email address like this")
         {
             
-        } 
+        }
     }
 }
