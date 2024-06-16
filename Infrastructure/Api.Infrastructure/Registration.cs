@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Api.Application.Interfaces.Tokens;
 using Api.Infrastructure.Tokens;
+using Api.Infrastructure.RedisCache;
+using Api.Application.Interfaces.RedisCache;
 
 namespace Api.Infrastructure
 {
@@ -15,6 +17,10 @@ namespace Api.Infrastructure
             services.Configure<TokenSettings>(configuration.GetSection("JWT"));
 
             services.AddTransient<ITokenService,TokenService>();
+
+            services.Configure<RedisCacheSettings>(configuration.GetSection("RedisCacheSettings"));
+
+            services.AddTransient<IRedisCacheService, RedisCacheService>();
 
             services.AddAuthentication(opt =>
             {
@@ -36,6 +42,11 @@ namespace Api.Infrastructure
                    
 
                 };
+            });
+            services.AddStackExchangeRedisCache(opt =>
+            {
+                opt.Configuration = configuration["RedisCacheSettings:ConnectingString"];
+                opt.InstanceName = configuration["RedisCacheSettings:InstanceName"];
             });
         }
 
